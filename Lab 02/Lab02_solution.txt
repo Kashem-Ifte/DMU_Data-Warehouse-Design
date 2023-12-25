@@ -1,0 +1,109 @@
+CREATE TABLE student (
+sid		CHAR(5)	PRIMARY KEY,
+sname		VARCHAR2(10) NOT NULL,
+city		VARCHAR2(10),
+gender          CHAR(1));
+
+CREATE TABLE module(
+mid 		char(5) primary key,
+mtitle 	varchar2(10) not null,
+credit		number);
+
+CREATE TABLE result(
+sid		CHAR(5) CONSTRAINT fk3 REFERENCES student ON DELETE CASCADE,
+mid		CHAR(5) CONSTRAINT fk4 REFERENCES module ON DELETE CASCADE,
+mark		NUMBER, 	
+CONSTRAINT check_mark CHECK (mark BETWEEN 0 AND 100),
+CONSTRAINT pk1 PRIMARY KEY (sid, mid));
+
+Insert into student values('s01','Sanghera','London','F');
+Insert into student values('s02','Jones','Paris','F');
+Insert into student values('s03','Blake','Paris','M');
+Insert into student values('s04','Obhi','London','M');
+
+
+Insert into module values('m01','Database',15);
+Insert into module values('m02','Java',15);
+Insert into module values('m03','C++',30);
+Insert into module values('m04','E-Commerce',15);
+
+Insert into result values('s01','m01',90);
+Insert into result values('s01','m02',80);
+Insert into result values('s01','m03',85);
+Insert into result values('s01','m04',95);
+Insert into result values('s02','m01',70);
+Insert into result values('s02','m02',60);
+Insert into result values('s03','m02',65);
+Insert into result values('s04','m02',90);
+Insert into result values('s04','m04',96);
+
+•	List all cities where we have students
+select distinct city
+from student;
+
+•	List all module titles with credits less than 20
+select mtitle
+from module
+where credit<20;
+
+•	Find name of the student whose SID is s02
+select sname 
+from student
+where sid='s02';
+
+•	Find the module ID and title for those modules with credit of 30
+select mid, mtitle
+from module
+where credit=30;
+
+•	List all module titles selected by Jones
+select mtitle 
+from module, student, result
+where module.mid=result.mid and student.sid=result.sid and student.sname='Jones';
+
+•	List all student names in Database
+select sname 
+from module, student, result
+where module.mid=result.mid and student.sid=result.sid and module.mtitle='Database';
+
+•	List the total credits obtained by each student
+
+select sid, sum(credit)
+from result,module
+where result.mid=module.mid
+group by sid;
+
+•	List the maximum mark for each module;
+
+select r.mid, mtitle, max(mark)
+from result r,module m
+where r.mid=m.mid
+group by r.mid, mtitle;
+
+•	List the maximum mark and the corresponding student name for students in each city.
+
+select sname,mark,city
+from result r1,student s1
+where mark=(
+select max(mark)
+from result r2, student s2
+where s1.city=s2.city and
+r2.sid=s2.sid) and 
+r1.sid=s1.sid;
+
+•	List pair of students who live in the same city and have at least two modules with marks equal or higher than 90.
+
+select s1.sid, s2.sid
+from student s1, student s2
+where s1.city=s2.city
+and s1.sid<s2.sid and 
+(select count(*)
+from result
+where mark>=90
+and sid=s1.sid)>=2
+and (select count(*)
+from result
+where mark>=90
+and sid=s2.sid)>=2;
+
+
